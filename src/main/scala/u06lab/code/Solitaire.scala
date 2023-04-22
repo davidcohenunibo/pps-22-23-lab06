@@ -28,7 +28,7 @@ case object Solitaire:
   def apply(size: BoardSize): LazyList[Board] =
     val center = Position(size.height / 2, size.width / 2)
     val board = createEmptyBoard(size).place(center, 1)
-    findAllSolutions(board, center, 1, size)
+    placeMarks(board, center, 1, size)
 
   def displaySolutions(solutions: LazyList[Board]): Unit =
     solutions.zipWithIndex.foreach { case (solution, index) =>
@@ -37,17 +37,17 @@ case object Solitaire:
 
   private def createEmptyBoard(size: BoardSize): Board =
     Seq.fill(size.height)(Seq.fill(size.width)(None))
-
-  private def findAllSolutions(board: Board, position: Position, count: Int = 1, size: BoardSize): LazyList[Board] =
+  private def placeMarks(board: Board, position: Position, count: Int = 1, size: BoardSize): LazyList[Board] =
     count match
-      case marks if marks == size.width * size.height => LazyList(board)
       case _ =>
-        for
-          move <- moves.to(LazyList)
-          next = position.add(move)
-          if board.isValidPosition(next, size)
-            solution <- findAllSolutions(board.place(next, count + 1), next, count + 1, size)
-        yield solution
+        val validSolutions =
+          for
+            move <- moves.to(LazyList)
+            next = position.add(move)
+            if board.isValidPosition(next, size)
+            solution <- placeMarks(board.place(next, count + 1), next, count + 1, size)
+          yield solution
+        if validSolutions.nonEmpty then validSolutions else LazyList(board)
 
   private def render(board: Board): String =
     board.map(_.map(cell => cell.fold(emptyChar)("%2d".format(_))).mkString(" ")).mkString("\n")

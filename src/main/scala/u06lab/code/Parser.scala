@@ -1,12 +1,7 @@
 package u06lab.code
 
-/** Consider the Parser example shown in previous lesson. Analogously to NonEmpty, create a mixin NotTwoConsecutive,
-  * which adds the idea that one cannot parse two consecutive elements which are equal. Use it (as a mixin) to build
-  * class NotTwoConsecutiveParser, used in the testing code at the end. Note we also test that the two mixins can work
-  * together!!
-
-
-   Provide missing implementations such that the code in TryParsers works
+/**
+ Provide missing implementations such that the code in TryParsers works
   correctly.
   Consider the Parser example shown in previous lesson.
   Analogously to NonEmpty, create a mixin NotTwoConsecutive, which adds
@@ -47,9 +42,6 @@ trait NotTwoConsecutive[T] extends Parser[T]:
     case _ => super.parseAll(seq)
   }
 
-//Implment mixin ShortenThenN which accepts a sequence of chars
-//of length at most n (part of the trait constructor).
-
 trait ShortenThenN[T] extends Parser[T]:
   private[this] val n: Int = 5
   abstract override def parseAll(seq: Seq[T]): Boolean = seq.size <= n && super.parseAll(seq)
@@ -79,9 +71,9 @@ class NotTwoConsecutiveParser(chars: Set[Char]) extends BasicParser(chars) with 
   println(parserNTCNE.parseAll("XYZ".toList)) // true
   println(parserNTCNE.parseAll("XYYZ".toList)) // false
   println(parserNTCNE.parseAll("".toList)) // false
-//
-//  import Parsers.*
-//  def sparser: Parser[Char] = "abc".charParser()
-//  println(sparser.parseAll("aabc".toList)) // true
-//  println(sparser.parseAll("aabcdc".toList)) // false
-//  println(sparser.parseAll("".toList)) // true
+
+  import Parsers.*
+  def sparser: Parser[Char] = "abc".charParser()
+  println(sparser.parseAll("aabc".toList)) // true
+  println(sparser.parseAll("aabcdc".toList)) // false
+  println(sparser.parseAll("".toList)) // true

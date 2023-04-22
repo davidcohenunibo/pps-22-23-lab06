@@ -27,5 +27,4 @@ class SolitaireTests {
       val solutions = Solitaire(BoardSize(5, 5)).take(2)
       assertTrue(solutions.contains(board))
 
-
 }

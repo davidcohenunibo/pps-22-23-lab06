@@ -54,6 +54,6 @@ case object Solitaire:
 
 @main def testSolitaire(): Unit =
   import Solitaire.*
-  val size = BoardSize(7, 5)
+  val size = BoardSize(5, 5)
   val solutions = Solitaire(size)
   displaySolutions(solutions)

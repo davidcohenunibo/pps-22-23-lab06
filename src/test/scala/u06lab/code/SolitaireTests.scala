@@ -3,7 +3,7 @@ package u06lab.code
 import org.junit.Assert.*
 import org.junit.Test
 
-class SolitaireTests {
+class SolitaireTests:
 
   import org.junit.Test
   import org.junit.Assert._
@@ -27,4 +27,3 @@ class SolitaireTests {
       val solutions = Solitaire(BoardSize(5, 5)).take(2)
       assertTrue(solutions.contains(board))
 
-}

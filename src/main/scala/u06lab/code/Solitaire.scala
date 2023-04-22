@@ -1,59 +1,59 @@
 package u06lab.code
+import scala.annotation.targetName
 
-object Solitaire:
-  private type Position = (Int, Int)
-  private type Move = (Int, Int)
-  private type Cell = Option[Int]
-  private type Board = Seq[Seq[Cell]]
+case class BoardSize(width: Int, height: Int)
+case class Position(row: Int, col: Int)
+case class Move(row: Int, col: Int)
 
-  private object Constants {
-    val moves: List[Move] = List((-3, 0), (-2, 2), (0, 3), (2, 2), (3, 0), (2, -2), (0, -3), (-2, -2))
-  }
-
-  import Constants._
+case object Solitaire:
+  private object Solitaire:
+    type Board = Seq[Seq[Option[Int]]]
+    val moves: List[Move] = List(Move(-3, 0), Move(-2, 2), Move(0, 3), Move(2, 2), Move(3, 0), Move(2, -2), Move(0, -3), Move(-2, -2))
+    val emptyChar = "X"
+  import Solitaire._
 
   extension (board: Board)
-    private def placeMark(position: Position, num: Int): Board =
-      board.updated(position._1, board(position._1).updated(position._2, Some(num)))
+    @targetName("update")
+    private def place(position: Position, num: Int): Board =
+      board.updated(position.row, board(position.row).updated(position.col, Some(num)))
 
-    private def isValid(position: Position, width: Int, height: Int): Boolean =
-      (0 until height contains position._1) &&
-        (0 until width contains position._2) &&
-        board(position._1)(position._2).isEmpty
+    private def isValidPosition(position: Position, size: BoardSize): Boolean = position match
+      case Position(row, col) => (0 until size.height contains row) && (0 until size.width contains col) && board(row)(col).isEmpty
 
 
   extension (position: Position)
-    def +(move: Move): Position = (position._1 + move._1, position._2 + move._2)
+    @targetName("move")
+    def add(move: Move): Position = Position(position.row + move.row, position.col + move.col)
 
-
-  def placeMarks(width: Int, height: Int): LazyList[Board] =
-    val initialPosition = (height / 2, width / 2)
-    val initialBoard = LazyList.fill(height)(LazyList.fill(width)(None: Option[Int])).placeMark(initialPosition, 1)
-    findAllSolutions(initialBoard, initialPosition, 1, width, height)
-
-  private def findAllSolutions(board: Board, position: Position, count: Int, width: Int, height: Int): LazyList[Board] =
-    if (count == height * width) LazyList(board)
-    else
-      LazyList.from(moves)
-        .map(move => position + move)
-        .filter(nextPosition => board.isValid(nextPosition, width, height))
-        .flatMap(nextPosition => findAllSolutions(board.placeMark(nextPosition, count + 1), nextPosition, count + 1, width, height))
+  def apply(size: BoardSize): LazyList[Board] =
+    val center = Position(size.height / 2, size.width / 2)
+    val board = createEmptyBoard(size).place(center, 1)
+    findAllSolutions(board, center, 1, size)
 
   def displaySolutions(solutions: LazyList[Board]): Unit =
     solutions.zipWithIndex.foreach { case (solution, index) =>
-      println(s"Solution ${index + 1}")
-      println(render(solution))
+      println(s"Solution ${index + 1} \n ${render(solution)}")
     }
-    println(s"Found ${solutions.length} solution(s)!")
+
+  private def createEmptyBoard(size: BoardSize): Board =
+    Seq.fill(size.height)(Seq.fill(size.width)(None))
+
+  private def findAllSolutions(board: Board, position: Position, count: Int = 1, size: BoardSize): LazyList[Board] =
+    count match
+      case marks if marks == size.width * size.height => LazyList(board)
+      case _ =>
+        for
+          move <- moves.to(LazyList)
+          next = position.add(move)
+          if board.isValidPosition(next, size)
+            solution <- findAllSolutions(board.place(next, count + 1), next, count + 1, size)
+        yield solution
 
   private def render(board: Board): String =
-    board
-      .map(row => row.map(cell => cell.fold("X")("%2d".format(_))).mkString(" "))
-      .mkString("\n")
-
+    board.map(_.map(cell => cell.fold(emptyChar)("%2d".format(_))).mkString(" ")).mkString("\n")
 
 @main def testSolitaire(): Unit =
-  val width = 7
-  val height = 5
-  val solutions = Solitaire.placeMarks(width, height)
-  Solitaire.displaySolutions(solutions)
+  import Solitaire.*
+  val size = BoardSize(7, 5)
+  val solutions = Solitaire(size)
+  displaySolutions(solutions)
